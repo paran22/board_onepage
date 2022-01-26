@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Webpage Title -->
+    <title>항해 블로그</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Font Awesome CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Stylish&display=swap" rel="stylesheet">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+
+
+    <script>
+        $(document).ready(function () {
+            getBoards();
+        })
+
+        //게시글 목록보기
+        function getBoards() {
+            $("#boardList").empty();
+            $.ajax({
+                type: "GET",
+                url: `/boards`,
+                success: function (response) {
+                    for (let i = 0; i < response.length; i++) {
+                        let board = response[i];
+                        let id = board.id;
+                        let title = board.title;
+                        let contents = board.contents;
+                        let username = board.username;
+                        let createdAt = board.createdAt;
+                        let temp_html = `<tr>
+                                            <th scope="col">${title}
+                                            <button type="button" class="btn btn-primary" id="writeBtn"
+                                                    onclick="getOneBoard(${id})">보기
+                                              </button></th>
+                                            <th scope="col">${username}</th>
+                                            <th scope="col">${createdAt}</th>
+                                        </tr>`
+                        $('#boardList').append(temp_html);
+                    }
+                }
+            })
+        }
+
+        //게시글 한개 보기
+        //게시글 목록보기에서 버튼 onclick시 함수 실행되고 id값을 받아온다.
+        function getOneBoard(id) {
+            $('#boardOne').empty();
+            $('#boardOne').show();
+            $.ajax({
+                type: "GET",
+                url: `/boards/${id}`,
+                success: function (response) {
+                    let board = response;
+                    let title = board.title;
+                    let contents = board.contents;
+                    let temp_html = `<div class="card" style="width: 18rem;">
+                                      <div class="card-body">
+                                        <h5 class="card-title">${title}</h5>
+                                        <p class="card-text">${contents}</p>
+                                        <a onclick="closeCard()" class="btn btn-primary">닫기</a>
+                                      </div>
+                                    </div>`
+                    $('#boardOne').append(temp_html);
+                }
+            })
+        }
+
+        //게시글 카드 닫기
+        function closeCard() {
+            $('#boardOne').hide();
+        }
+
+
+        //게시글 등록하기
+        function postBoard() {
+            let title = $('#title').val();
+            let username = $('#username').val();
+            let contents = $('#contents').val();
+            let data = {'title': title, 'username': username, 'contents': contents}
+            $.ajax({
+                type: "POST",
+                url: "/boards",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function () {
+                    alert('게시글이 성공적으로 작성되었습니다.');
+                    $("#exampleModal").modal('dispose')
+                    window.location.reload()
+                }
+            })
+        }
+    </script>
+
+</head>
+<body>
+<div class="container" style="margin-top:30px">
+    <div class="row">
+        <div class="col-sm-12">
+            <h2>항해 블로그</h2>
+            <button type="button" class="btn btn-primary" id="writeBtn"
+                    data-toggle="modal" data-target="#exampleModal">글쓰기
+            </button>
+        </div>
+    </div>
+
+    <div id="boardOne" class="card" style="width: 18rem;">
+    </div>
+
+    <div id="card" class="card" style="width: 18rem;">
+    </div>
+    <table style="white-space: normal" class="table">
+        <thead>
+        <tr>
+            <th scope="col">제목</th>
+            <th scope="col">작성자명</th>
+            <th scope="col">작성날짜</th>
+        </tr>
+        </thead>
+        <tbody id="boardList">
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">게시글 작성하기</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">제목</label>
+                        <input type="text" class="form-control" id="title">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">작성자</label>
+                        <input type="text" class="form-control" id="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">내용</label>
+                        <textarea class="form-control" id="contents"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" onclick="postBoard()">저장하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</body>
